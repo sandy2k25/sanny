@@ -6,22 +6,35 @@
     <title>Video Embed</title>
 </head>
 <body>
+    <h1>Video Embed</h1>
+    <form action="/video" method="get">
+        <input type="text" id="videoId" placeholder="Enter TMDB or IMDb ID" required>
+        <button type="button" onclick="loadVideo()">Load Video</button>
+    </form>
 
-    <h1>Video Player</h1>
-
-    <!-- Embed the video using the proxy URL -->
-    <iframe id="videoIframe" frameborder="0" width="100%" height="600px"></iframe>
+    <div id="video-container">
+        <!-- The video will be embedded here dynamically -->
+    </div>
 
     <script>
-        // The video ID you want to embed (replace with the actual video ID)
-        const videoId = "your-video-id"; 
+        function loadVideo() {
+            var videoId = document.getElementById("videoId").value;
+            if (videoId) {
+                var videoContainer = document.getElementById("video-container");
+                var videoElement = document.createElement("video");
 
-        // Construct the proxy URL for the iframe
-        const proxyUrl = `http://localhost:3000/video/${videoId}`;
+                // Set the source of the video to the backend server that streams the video
+                videoElement.src = `http://localhost:3000/video/${videoId}`;
+                videoElement.width = "800";
+                videoElement.height = "450";
+                videoElement.controls = true; // Show video controls
+                videoElement.autoplay = true;
 
-        // Set the iframe source dynamically
-        document.getElementById('videoIframe').src = proxyUrl;
+                // Clear any previous video and append the new video element
+                videoContainer.innerHTML = "";
+                videoContainer.appendChild(videoElement);
+            }
+        }
     </script>
-
 </body>
 </html>
