@@ -3,38 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Embed</title>
+    <title>DevTools Detection</title>
 </head>
 <body>
-    <h1>Video Embed</h1>
-    <form action="/video" method="get">
-        <input type="text" id="videoId" placeholder="Enter TMDB or IMDb ID" required>
-        <button type="button" onclick="loadVideo()">Load Video</button>
-    </form>
+    <h1>Welcome to My Website</h1>
+    <p>If you try to inspect the page, it will reload automatically.</p>
 
-    <div id="video-container">
-        <!-- The video will be embedded here dynamically -->
-    </div>
-
+    <!-- Add the script at the end of the body -->
     <script>
-        function loadVideo() {
-            var videoId = document.getElementById("videoId").value;
-            if (videoId) {
-                var videoContainer = document.getElementById("video-container");
-                var videoElement = document.createElement("video");
+        (function() {
+            var devtools = { open: false };
+            var threshold = 160;
 
-                // Set the source of the video to the backend server that streams the video
-                videoElement.src = `http://localhost:3000/video/${videoId}`;
-                videoElement.width = "800";
-                videoElement.height = "450";
-                videoElement.controls = true; // Show video controls
-                videoElement.autoplay = true;
+            // Function to detect if developer tools are opened
+            var checkDevTools = function() {
+                // Check if the outerWidth is greater than innerWidth (indicating DevTools is open)
+                devtools.open = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
+                if (devtools.open) {
+                    location.reload();  // Reload the page if DevTools are detected
+                }
+            };
 
-                // Clear any previous video and append the new video element
-                videoContainer.innerHTML = "";
-                videoContainer.appendChild(videoElement);
-            }
-        }
+            // Set an interval to check every second (1000 ms)
+            setInterval(checkDevTools, 1000);
+        })();
     </script>
 </body>
 </html>
