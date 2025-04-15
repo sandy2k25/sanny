@@ -1,35 +1,27 @@
 const express = require('express');
-const path = require('path');
-
+const axios = require('axios');
 const app = express();
-const PORT = 3000;
+const port = 3000;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+// The provided URL (server URL)
+const SERVER_URL = "https://sandbox-43190000dd2042dc857ab709648d4448-ethereum-3000.prod-sandbox.chainide.com/";
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+app.get('/video/:id', async (req, res) => {
+    const videoId = req.params.id;
+    const videoUrl = `${SERVER_URL}movie/${videoId}`; // Dynamic video URL with the video ID
+
+    try {
+        // Fetch the video from the external URL
+        const response = await axios.get(videoUrl, { responseType: 'arraybuffer' });
+
+        // Set the appropriate content type (e.g., video/mp4)
+        res.set('Content-Type', 'video/mp4');
+        res.send(response.data); // Send the video data to the client
+    } catch (error) {
+        res.status(500).send('Error fetching video');
+    }
 });
 
-app.post('/watch', (req, res) => {
-  const id = req.body.movieId?.trim();
-  if (!id) return res.redirect('/');
-  res.send(`
-    <html>
-      <head>
-        <title>Embedded Player</title>
-        <style>
-          body { margin: 0; padding: 0; background: #000; }
-          iframe { width: 100vw; height: 100vh; border: none; }
-        </style>
-      </head>
-      <body>
-        <iframe src="https://vidzee.wtf/movie/${id}" allowfullscreen></iframe>
-      </body>
-    </html>
-  `);
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
