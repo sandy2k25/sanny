@@ -75,13 +75,13 @@ app.get('/watch', (req, res) => {
   `);
 });
 
-// Proxy route that hides real URL for Vidzee
+// Proxy route that hides real URL for S1 (Vidzee)
 app.get('/stream/:id', (req, res) => {
   const id = req.params.id;
   res.redirect(`https://vidzee.wtf/movie/${id}`);
 });
 
-// Proxy route for LetsEmbed (change 'letstream' to 'enjoy')
+// Proxy route for S2 (LetsEmbed) - changing 'letstream' to 'enjoy'
 app.get('/enjoy/:id', (req, res) => {
   const id = req.params.id;
   res.redirect(`https://Letsembed.cc/embed/movie/?id=${id}`);
@@ -90,3 +90,4 @@ app.get('/enjoy/:id', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
