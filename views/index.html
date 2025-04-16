@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Enter Movie ID</title>
-  </head>
-  <body>
-    <form action="/get" method="GET">
-      <input type="text" name="id" placeholder="Enter TMDB or IMDb ID" required />
-      <button type="submit">Watch</button>
-    </form>
-  </body>
+<head>
+  <title>Enter TMDB or IMDb ID</title>
+</head>
+<body>
+  <h2>Enter TMDB/IMDb ID</h2>
+  <form action="/get" method="POST">
+    <input type="text" name="id" placeholder="e.g., 41517" required />
+    <button type="submit">Play</button>
+  </form>
+</body>
 </html>
