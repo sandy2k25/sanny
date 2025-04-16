@@ -1,84 +1,72 @@
 const express = require('express');
 const path = require('path');
+const crypto = require('crypto');
 const app = express();
 const PORT = 3000;
 
+const tokenStore = {};
+
+const serverList = {
+  S1: id => `https://vidzee.wtf/movie/${id}`,
+  S2: id => `https://letsembed.cc/embed/movie/?id=${id}`,
+  S3: id => `https://player.autoembed.cc/embed/movie/${id}?autoplay=true`,
+  S4: id => `https://www.vidstream.site/embed/movie/${id}`,
+  S5: id => `https://vidfast.pro/movie/${id}?autoPlay=true`,
+  S6: id => `https://player.smashystream.com/movie/${id}`,
+  S7: id => `https://111movies.com/movie/${id}`,
+  S8: id => `https://vidjoy.pro/embed/movie/${id}?adFree=true`,
+  S9: id => `https://www.vidsrc.wtf/api/1/movie/?id=${id}`,
+  S10: id => `https://vidlink.pro/movie/${id}?autoplay=true&title=true`,
+  S11: id => `https://embed.su/embed/movie/${id}`,
+};
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/enjoy/:id', (req, res) => {
-  const id = req.params.id;
-  const server = req.query.server === 'S2' ? 'S2' : 'S1';
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
-  const source = server === 'S1'
-    ? `https://vidzee.wtf/movie/${id}`
-    : `https://letsembed.cc/embed/movie/?id=${id}`;
+app.post('/get', (req, res) => {
+  const id = req.body.id;
+  const server = req.body.server;
+  if (!id || !server || !serverList[server]) return res.send('Invalid input');
 
+  const token = crypto.randomBytes(16).toString('hex');
+  tokenStore[token] = { id, server, expires: Date.now() + 60000 };
+  res.redirect(`/watch?token=${token}`);
+});
+
+app.get('/watch', (req, res) => {
+  const token = req.query.token;
+  const entry = tokenStore[token];
+  if (!entry || Date.now() > entry.expires) return res.send('Invalid or expired token');
+
+  const videoUrl = `/stream/${entry.server}/${entry.id}`;
   res.send(`
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Embed Player</title>
+      <title>Secure Player</title>
       <style>
-        body {
-          margin: 0;
-          height: 100vh;
-          background: #0f0f0f;
-          font-family: sans-serif;
-          overflow: hidden;
-        }
-        .glass {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 15px;
-          padding: 10px;
-          backdrop-filter: blur(10px);
-          z-index: 999;
-        }
-        .glass select {
-          background: transparent;
-          color: white;
-          border: none;
-          outline: none;
-          font-size: 16px;
-        }
-        iframe {
-          width: 100vw;
-          height: 100vh;
-          border: none;
-        }
+        body { margin: 0; background: #000; }
+        iframe { width: 100vw; height: 100vh; border: none; }
       </style>
     </head>
     <body>
-      <div class="glass">
-        <form method="GET" action="/enjoy/${id}">
-          <select name="server" onchange="this.form.submit()">
-            <option value="S1" ${server === 'S1' ? 'selected' : ''}>S1</option>
-            <option value="S2" ${server === 'S2' ? 'selected' : ''}>S2</option>
-          </select>
-        </form>
-      </div>
       <div id="player"></div>
       <script>
-        // Anti-inspect
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => {
-          if (
-            e.keyCode == 123 ||
-            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-            (e.ctrlKey && e.key.toLowerCase() === 'u')
-          ) {
+          if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toLowerCase() === 'u')) {
             location.reload();
             return false;
           }
         };
-
-        // Dynamically inject iframe
         const iframe = document.createElement('iframe');
-        iframe.src = '${source}';
+        iframe.src = "${videoUrl}";
         iframe.allowFullscreen = true;
-        iframe.sandbox = "allow-scripts allow-same-origin";
+        iframe.sandbox = "allow-same-origin allow-scripts";
         document.getElementById("player").appendChild(iframe);
       </script>
     </body>
@@ -86,7 +74,12 @@ app.get('/enjoy/:id', (req, res) => {
   `);
 });
 
-app.listen(PORT, () => {
-  console.log(\`Server running on http://localhost:\${PORT}\`);
+app.get('/stream/:server/:id', (req, res) => {
+  const { server, id } = req.params;
+  if (!serverList[server]) return res.send('Invalid server');
+  res.redirect(serverList[server](id));
 });
 
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
