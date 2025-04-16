@@ -1,34 +1,51 @@
 const express = require('express');
-const axios = require('axios');
+const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
 const app = express();
-const port = 3000;
 
-// External URL for the video
-const BASE_URL = "https://sandbox-43190000dd2042dc857ab709648d4448-ethereum-3000.prod-sandbox.chainide.com/watch";
+// Serve the frontend static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Proxy endpoint to fetch the video
-app.get('/video/:id', async (req, res) => {
-    const videoId = req.params.id;
-    const videoUrl = `${BASE_URL}/${videoId}`;
+// Proxy for vidzee.wtf
+app.use('/stream', createProxyMiddleware({
+  target: 'https://vidzee.wtf',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/stream': '', // /stream/movie/id => /movie/id
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    // Hide the original vidzee.wtf URL
+    proxyReq.setHeader('Referer', 'https://vidzee.wtf');
+  },
+}));
 
-    try {
-        // Fetch the video stream from the external URL
-        const response = await axios.get(videoUrl, { responseType: 'stream' });
+// Route: /watch?id=tt1234567
+app.get('/watch', (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.send('No ID provided');
 
-        // Set the content type for video (adjust MIME type if needed)
-        res.setHeader('Content-Type', 'video/mp4');  // Assuming video is MP4 format
-
-        // Stream the video to the client
-        response.data.pipe(res);  // Send the video stream to the browser
-    } catch (error) {
-        res.status(500).send('Error fetching video');
-    }
+  // Send back an HTML page with the iframe
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Watch Movie</title>
+      <style>
+        html, body { margin: 0; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+      </style>
+    </head>
+    <body>
+      <iframe src="/stream/movie/${id}" allowfullscreen></iframe>
+    </body>
+    </html>
+  `);
 });
 
-// Serve static files (like HTML, CSS, JS)
-app.use(express.static('public'));
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
