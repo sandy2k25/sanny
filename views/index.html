@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Movie Embedder</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Embed Movie</h1>
-    <form action="/watch" method="POST">
-      <input type="text" name="movieId" placeholder="Enter TMDB or IMDb ID" required />
-      <button type="submit">Watch Now</button>
+  <head>
+    <title>Enter Movie ID</title>
+  </head>
+  <body>
+    <form action="/get" method="GET">
+      <input type="text" name="id" placeholder="Enter TMDB or IMDb ID" required />
+      <button type="submit">Watch</button>
     </form>
-  </div>
-</body>
+  </body>
 </html>
