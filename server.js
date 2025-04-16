@@ -44,8 +44,8 @@ app.get('/watch', (req, res) => {
     </head>
     <body>
       <select id="switcher">
-        <option value="vidzee" selected>Vidzee</option>
-        <option value="letsembed">LetsEmbed</option>
+        <option value="S1" selected>Server 1</option>
+        <option value="S2">Server 2</option>
       </select>
       <div id="player"></div>
       <script>
@@ -88,9 +88,9 @@ app.get('/watch', (req, res) => {
 // Hidden redirect to stream URLs
 app.get('/stream/:source/:id', (req, res) => {
   const { source, id } = req.params;
-  if (source === 'vidzee') {
+  if (source === 'S1') {
     res.redirect(`https://vidzee.wtf/movie/${id}`);
-  } else if (source === 'letsembed') {
+  } else if (source === 'S2') {
     res.redirect(`https://letsembed.cc/embed/movie/?id=${id}`);
   } else {
     res.status(404).send('Unknown source');
