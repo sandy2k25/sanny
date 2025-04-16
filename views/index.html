@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embed Player</title>
+    <title>Embed Video Player</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,10 +65,10 @@
 </head>
 <body>
 
-<h1> Enjoy Player</h1>
+<h1>Embed Video Player</h1>
 
 <form method="POST" action="/get">
-    <label for="id">Enter TMDB ID:</label><br>
+    <label for="id">Enter TMDB/IMDb ID:</label><br>
     <input type="text" id="id" name="id" required><br><br>
     <button type="submit">Get Embed</button>
 </form>
@@ -76,8 +76,8 @@
 <div id="iframe-container">
     <div id="server-selection">
         <select id="server">
-            <option value="vidzee">S1</option>
-            <option value="letsembed">S2</option>
+            <option value="s1">S1 (Vidzee)</option>
+            <option value="s2">S2 (LetsEmbed)</option>
         </select>
     </div>
     <div id="spinner" class="spinner"></div>
@@ -102,10 +102,10 @@
         spinner.style.display = "block";
 
         // Determine which server to use based on selection
-        if (selectedServer === 'vidzee') {
-            videoUrl = `/stream/${movieId}`; // This can be your vidzee API or URL
-        } else if (selectedServer === 'letsembed') {
-            videoUrl = `/enjoy/${movieId}`; // This now points to /enjoy/ instead of /letstream/
+        if (selectedServer === 's1') {
+            videoUrl = `/stream/${movieId}`; // This can be your S1 (Vidzee) API or URL
+        } else if (selectedServer === 's2') {
+            videoUrl = `/enjoy/${movieId}`; // This now points to /enjoy/ for S2 (LetsEmbed)
         }
 
         // Update iframe src to reflect selected server
