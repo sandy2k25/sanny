@@ -1,1 +1,54 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Enter Movie ID</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(to right, #434343, #000);
+      font-family: sans-serif;
+    }
+    form {
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.1);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1);
+    }
+    input, select, button {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+    button {
+      background: #00c6ff;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form action="/get" method="POST">
+    <input type="text" name="id" placeholder="Enter TMDB ID" required />
+    <select name="server">
+      <option value="S1">Server 1</option>
+      <option value="S2">Server 2</option>
+      <option value="S3">Server 3</option>
+      <option value="S4">Server 4</option>
+      <option value="S5">Server 5</option>
+      <option value="S6">Server 6</option>
+      <option value="S7">Server 7</option>
+      <option value="S8">Server 8</option>
+      <option value="S9">Server 9</option>
+      <option value="S10">Server 10</option>
+      <option value="S11">Server 11</option>
+    </select>
+    <button type="submit">Watch</button>
+  </form>
+</body>
+</html>
