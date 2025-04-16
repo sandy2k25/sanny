@@ -10,17 +10,23 @@ const tokenStore = {};
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
-// Direct access route: /watch/:id
-app.get('/watch/:id', (req, res) => {
-  const id = req.params.id;
+// Serve the home page with input form
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+// Handle form submission, generate token and redirect
+app.post('/get', (req, res) => {
+  const id = req.body.id;
   if (!id) return res.send('No ID provided');
 
   const token = crypto.randomBytes(16).toString('hex');
   tokenStore[token] = { id, expires: Date.now() + 60000 };
+
   res.redirect(`/watch?token=${token}`);
 });
 
-// Secure player with hidden iframe source
+// Watch route with iframe loaded by JavaScript (hides URL)
 app.get('/watch', (req, res) => {
   const token = req.query.token;
   const entry = tokenStore[token];
@@ -39,21 +45,16 @@ app.get('/watch', (req, res) => {
       <style>
         html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
         iframe { display: block; width: 100vw; height: 100vh; border: none; }
-        #switcher { position: fixed; top: 10px; right: 10px; z-index: 99; }
       </style>
     </head>
     <body>
-      <select id="switcher">
-        <option value="S1" selected>Server 1</option>
-        <option value="S2">Server 2</option>
-      </select>
       <div id="player"></div>
       <script>
-        // Prevent inspect
+        // Anti-inspect
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => {
           if (
-            e.keyCode === 123 || 
+            e.keyCode == 123 || 
             (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || 
             (e.ctrlKey && e.key.toLowerCase() === 'u')
           ) {
@@ -62,42 +63,30 @@ app.get('/watch', (req, res) => {
           }
         };
 
-        // Load iframe securely via JS
-        function loadPlayer(source) {
-          const iframe = document.createElement('iframe');
-          iframe.allowFullscreen = true;
-          iframe.sandbox = "allow-scripts allow-same-origin";
-          iframe.src = "/stream/" + source + "/${id}";
-          document.getElementById("player").innerHTML = '';
-          document.getElementById("player").appendChild(iframe);
-        }
-
-        // Default load
-        loadPlayer('vidzee');
-
-        // Handle switching
-        document.getElementById('switcher').addEventListener('change', function() {
-          loadPlayer(this.value);
-        });
+        // Load iframe via JS (not in raw HTML)
+        const iframe = document.createElement('iframe');
+        iframe.src = "/stream/${id}";
+        iframe.allowFullscreen = true;
+        iframe.sandbox = "allow-scripts allow-same-origin";
+        document.getElementById("player").appendChild(iframe);
       </script>
     </body>
     </html>
   `);
 });
 
-// Hidden redirect to stream URLs
-app.get('/stream/:source/:id', (req, res) => {
-  const { source, id } = req.params;
-  if (source === 'S1') {
-    res.redirect(`https://vidzee.wtf/movie/${id}`);
-  } else if (source === 'S2') {
-    res.redirect(`https://letsembed.cc/embed/movie/?id=${id}`);
-  } else {
-    res.status(404).send('Unknown source');
-  }
+// Proxy route that hides real URL for Vidzee
+app.get('/stream/:id', (req, res) => {
+  const id = req.params.id;
+  res.redirect(`https://vidzee.wtf/movie/${id}`);
+});
+
+// Proxy route for LetsEmbed (change 'letstream' to 'enjoy')
+app.get('/enjoy/:id', (req, res) => {
+  const id = req.params.id;
+  res.redirect(`https://Letsembed.cc/embed/movie/?id=${id}`);
 });
 
 app.listen(PORT, () => {
-  console.log(`Secure player running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
-
