@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevTools Detection</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Embed</title>
 </head>
 <body>
-    <h1>Welcome to My Website</h1>
-    <p>If you try to inspect the page, it will reload automatically.</p>
+  <h1>Enter Movie ID (TMDB or IMDb)</h1>
+  <form id="movie-form">
+    <input type="text" id="movie-id" placeholder="Enter IMDb or TMDB ID" required />
+    <button type="submit">Watch Movie</button>
+  </form>
 
-    <!-- Add the script at the end of the body -->
-    <script>
-        (function() {
-            var devtools = { open: false };
-            var threshold = 160;
+  <script>
+    const form = document.getElementById('movie-form');
+    const input = document.getElementById('movie-id');
 
-            // Function to detect if developer tools are opened
-            var checkDevTools = function() {
-                // Check if the outerWidth is greater than innerWidth (indicating DevTools is open)
-                devtools.open = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
-                if (devtools.open) {
-                    location.reload();  // Reload the page if DevTools are detected
-                }
-            };
-
-            // Set an interval to check every second (1000 ms)
-            setInterval(checkDevTools, 1000);
-        })();
-    </script>
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const movieId = input.value.trim();
+      if (movieId) {
+        // Redirect the user to the /watch route with the movie ID
+        window.location.href = `/watch?id=${movieId}`;
+      } else {
+        alert('Please enter a valid movie ID.');
+      }
+    });
+  </script>
 </body>
 </html>
