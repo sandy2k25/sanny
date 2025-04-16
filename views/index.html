@@ -1,31 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie Embed</title>
+  <title>Movie Embedder</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <h1>Enter Movie ID (TMDB or IMDb)</h1>
-  <form id="movie-form">
-    <input type="text" id="movie-id" placeholder="Enter IMDb or TMDB ID" required />
-    <button type="submit">Watch Movie</button>
-  </form>
-
-  <script>
-    const form = document.getElementById('movie-form');
-    const input = document.getElementById('movie-id');
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const movieId = input.value.trim();
-      if (movieId) {
-        // Redirect the user to the /watch route with the movie ID
-        window.location.href = `/watch?id=${movieId}`;
-      } else {
-        alert('Please enter a valid movie ID.');
-      }
-    });
-  </script>
+  <div class="container">
+    <h1>Embed Movie</h1>
+    <form action="/watch" method="POST">
+      <input type="text" name="movieId" placeholder="Enter TMDB or IMDb ID" required />
+      <button type="submit">Watch Now</button>
+    </form>
+  </div>
 </body>
 </html>
