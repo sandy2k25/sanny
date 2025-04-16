@@ -1,41 +1,35 @@
 const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
 const app = express();
+const PORT = 3000;
 
-// Proxy middleware to hide the Vidzee URL
-app.use('/stream', createProxyMiddleware({
-  target: 'https://vidzee.wtf',
-  changeOrigin: true,
-  pathRewrite: {
-    '^/stream': '', // Rewriting /stream to /movie/{id}
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    proxyReq.setHeader('Referer', 'https://vidzee.wtf');
-  }
-}));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Route for video watch page
-app.get('/watch', (req, res) => {
-  const movieId = req.query.id;
-  if (!movieId) {
-    return res.send('Error: No Movie ID provided');
-  }
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
-  // Serve the embedded player with the movie
+app.post('/watch', (req, res) => {
+  const id = req.body.movieId?.trim();
+  if (!id) return res.redirect('/');
   res.send(`
-    <!DOCTYPE html>
     <html>
-    <head><title>Watch Movie</title></head>
-    <body>
-      <iframe src="/stream/movie/${movieId}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-    </body>
+      <head>
+        <title>Embedded Player</title>
+        <style>
+          body { margin: 0; padding: 0; background: #000; }
+          iframe { width: 100vw; height: 100vh; border: none; }
+        </style>
+      </head>
+      <body>
+        <iframe src="https://vidzee.wtf/movie/${id}" allowfullscreen></iframe>
+      </body>
     </html>
   `);
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
