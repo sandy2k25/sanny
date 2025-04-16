@@ -4,18 +4,18 @@ const crypto = require('crypto');
 const app = express();
 const PORT = 3000;
 
-// Token store (simple in-memory object)
+// In-memory token store
 const tokenStore = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve the form page
+// Serve the home page with input form
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// Handle form submission
+// Handle form submission, generate token and redirect
 app.post('/get', (req, res) => {
   const id = req.body.id;
   if (!id) return res.send('No ID provided');
@@ -26,7 +26,7 @@ app.post('/get', (req, res) => {
   res.redirect(`/watch?token=${token}`);
 });
 
-// Watch page
+// Watch route with iframe loaded by JavaScript (hides URL)
 app.get('/watch', (req, res) => {
   const token = req.query.token;
   const entry = tokenStore[token];
@@ -38,40 +38,44 @@ app.get('/watch', (req, res) => {
   const id = entry.id;
 
   res.send(`
+    <!DOCTYPE html>
     <html>
     <head>
       <title>Secure Player</title>
       <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: black; }
+        html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+        iframe { display: block; width: 100vw; height: 100vh; border: none; }
       </style>
     </head>
     <body>
-      <div id="container"></div>
+      <div id="player"></div>
       <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const iframe = document.createElement('iframe');
-          iframe.src = "/stream/${id}";
-          iframe.style = "width:100vw;height:100vh;border:none;";
-          iframe.allowFullscreen = true;
-          iframe.sandbox = "allow-scripts allow-same-origin";
-          document.getElementById('container').appendChild(iframe);
-        });
-
         // Anti-inspect
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => {
-          if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key === 'u')) {
+          if (
+            e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || 
+            (e.ctrlKey && e.key.toLowerCase() === 'u')
+          ) {
             location.reload();
             return false;
           }
         };
+
+        // Load iframe via JS (not in raw HTML)
+        const iframe = document.createElement('iframe');
+        iframe.src = "/stream/${id}";
+        iframe.allowFullscreen = true;
+        iframe.sandbox = "allow-scripts allow-same-origin";
+        document.getElementById("player").appendChild(iframe);
       </script>
     </body>
     </html>
   `);
 });
 
-// Proxy route (protect actual URL)
+// Proxy route that hides real URL
 app.get('/stream/:id', (req, res) => {
   const id = req.params.id;
   res.redirect(`https://vidzee.wtf/movie/${id}`);
